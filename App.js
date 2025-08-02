@@ -3,6 +3,7 @@ import { Alert, Linking } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { authService } from './authService';
 import { socialAuthService } from './socialAuthService';
+import { biometricService } from './biometricService';
 import { styles } from './styles/AppStyles';
 import { AppProvider, useAppContext } from './contexts/AppContext';
 
@@ -78,21 +79,13 @@ function AppContent() {
         setShowLogin(false);
         setShowSignUp(false);
         
-        // For new signups, we need to check onboarding with loading
-        // For returning users, we want a quick check
-        const isNewSession = event === 'SIGNED_IN';
-        
-        if (isNewSession) {
-          // Keep loading screen for new signups
-          setLoading(true);
-        }
-        
         // Check if user needs onboarding
         const needsOnboarding = await checkIfUserNeedsOnboarding(session.user.id);
         setShowOnboarding(needsOnboarding);
         
-        // Clear loading after check
+        // Clear both loading states after onboarding check
         setLoading(false);
+        setAuthLoading(false);
       } else {
         setUser(null);
         setIsAuthenticated(false);
@@ -102,17 +95,12 @@ function AppContent() {
         setAuthLoading(false);
         setLoading(false);
       }
-      
-      // Clear auth loading state
-      setAuthLoading(false);
     });
 
     // Handle OAuth callback from social logins
     const handleUrl = async (event) => {
       if (event.url.includes('auth/callback')) {
-        setLoading(true);
         const result = await socialAuthService.handleOAuthCallback(event.url);
-        setLoading(false);
         if (!result.success) {
           Alert.alert('Login Error', result.error);
         }
@@ -137,14 +125,8 @@ function AppContent() {
         setShowLanding(false);
         
         // For existing users, check if they have completed onboarding
-        // This reduces unnecessary database calls
         const needsOnboarding = await checkIfUserNeedsOnboarding(user.id);
         setShowOnboarding(needsOnboarding);
-        
-        // Only show loading briefly for returning users
-        if (!needsOnboarding) {
-          setLoading(false);
-        }
       }
     } catch (error) {
       console.error('Auth check error:', error);
@@ -297,11 +279,9 @@ function AppContent() {
       
       console.log('Fitness profile saved successfully:', data);
       
-      // Smooth transition to dashboard without popup
+      // Smooth transition to dashboard
       setShowOnboarding(false);
       setLoading(false);
-      // User will automatically see the dashboard since they're authenticated
-      // and no longer need onboarding
       
     } catch (error) {
       console.error('Error completing onboarding:', error);
@@ -352,11 +332,10 @@ function AppContent() {
       
       if (loginResult.success) {
         console.log('Auto-login successful, user will be redirected to onboarding');
-        // Keep loading state active - let the auth state listener handle the rest
-        // Don't set loading to false here
+        // Auth state listener will handle the rest
       } else {
         console.error('Auto-login failed:', loginResult.error);
-        setLoading(false); // Only set loading false on error
+        setLoading(false);
         Alert.alert(
           'Account Created', 
           'Your account was created successfully, but there was an issue logging you in automatically. Please log in manually.',
@@ -365,7 +344,7 @@ function AppContent() {
       }
     } else {
       console.error('Sign-up error:', result.error);
-      setLoading(false); // Only set loading false on error
+      setLoading(false);
       Alert.alert('Error', result.error);
     }
   };
@@ -380,6 +359,9 @@ function AppContent() {
     const result = await authService.signIn(formData.email, formData.password);
     
     if (result.success) {
+      // Ask user if they want to enable biometric login
+      await promptBiometricSetup(formData.email, formData.password);
+      
       // Clear form data
       setFormData({
         email: '',
@@ -388,11 +370,77 @@ function AppContent() {
         lastName: '',
         gender: ''
       });
-      // Keep loading state active - let the auth state listener handle the rest
-      // Don't set loading to false here
+      // Auth state listener will handle the rest
     } else {
-      setLoading(false); // Only set loading false on error
+      setLoading(false);
       Alert.alert('Error', result.error);
+    }
+  };
+
+  const promptBiometricSetup = async (email, password) => {
+    try {
+      const biometricInfo = await biometricService.getBiometricInfo();
+      
+      // Only prompt if biometrics are available but not yet enabled
+      if (biometricInfo.isAvailable && !biometricInfo.isEnabled) {
+        Alert.alert(
+          `Enable ${biometricInfo.biometricType} Login?`,
+          `Would you like to use ${biometricInfo.biometricType} for faster login next time?`,
+          [
+            {
+              text: 'Not Now',
+              style: 'cancel'
+            },
+            {
+              text: 'Enable',
+              onPress: async () => {
+                const result = await biometricService.enableBiometricLogin(email, password);
+                if (result.success) {
+                  Alert.alert(
+                    'Success!', 
+                    `${result.biometricType} login has been enabled. You can now sign in quickly using biometrics.`
+                  );
+                } else {
+                  console.error('Failed to enable biometric login:', result.error);
+                }
+              }
+            }
+          ]
+        );
+      }
+    } catch (error) {
+      console.error('Error in biometric setup prompt:', error);
+    }
+  };
+
+  const handleBiometricLogin = async () => {
+    setLoading(true);
+    
+    try {
+      const credentialsResult = await biometricService.getBiometricCredentials();
+      
+      if (!credentialsResult.success) {
+        setLoading(false);
+        Alert.alert('Error', credentialsResult.error);
+        return;
+      }
+
+      // Sign in with retrieved credentials
+      const loginResult = await authService.signIn(
+        credentialsResult.credentials.email, 
+        credentialsResult.credentials.password
+      );
+      
+      if (loginResult.success) {
+        // Auth state listener will handle the rest
+      } else {
+        setLoading(false);
+        Alert.alert('Login Failed', loginResult.error);
+      }
+    } catch (error) {
+      setLoading(false);
+      Alert.alert('Error', 'Biometric login failed. Please try again.');
+      console.error('Biometric login error:', error);
     }
   };
 
@@ -432,26 +480,27 @@ function AppContent() {
       if (!result.success) {
         console.error(`${provider} login error:`, result.error);
         Alert.alert('Social Login Error', result.error);
+        setLoading(false);
       } else {
         console.log(`${provider} login successful!`);
+        // Auth state listener will handle the rest
       }
     } catch (error) {
       console.error(`${provider} login exception:`, error);
       Alert.alert('Social Login Error', error.message || 'An unexpected error occurred');
+      setLoading(false);
     }
-    
-    setLoading(false);
-    // Success is handled by the auth state listener
   };
 
-  // Show loading screen while checking authentication or during user setup
-  if (authLoading) {
-    return <LoadingScreen styles={styles} message="Loading..." />;
-  }
-  
-  // Show friendly loading for new users during setup
-  if (isAuthenticated && loading) {
-    return <LoadingScreen styles={styles} message="Thanks for joining us! Setting up your experience..." />;
+  // Single loading screen for all loading states
+  if (authLoading || loading) {
+    const message = authLoading 
+      ? "Welcome to Core+..." 
+      : isAuthenticated 
+        ? "Setting up your personalized experience..." 
+        : "Logging you in...";
+    
+    return <LoadingScreen styles={styles} message={message} />;
   }
 
   if (showLanding) {
@@ -488,6 +537,7 @@ function AppContent() {
         onBackToLanding={handleBackToLanding}
         onSwitchToSignUp={handleSwitchToSignUp}
         onSocialLogin={handleSocialLogin}
+        onBiometricLogin={handleBiometricLogin}
         styles={styles}
       />
     );

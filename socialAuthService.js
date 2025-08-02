@@ -13,7 +13,9 @@ export const socialAuthService = {
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
+            hd: 'coreplus.app', // Optional: restrict to specific domain
           },
+          scopes: 'openid email profile',
         },
       });
 

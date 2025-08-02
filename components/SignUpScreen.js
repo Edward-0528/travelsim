@@ -1,12 +1,15 @@
-import React, { memo, useCallback } from 'react';
-import { View, Text, TouchableOpacity, SafeAreaView, ScrollView } from 'react-native';
-import { PaperProvider } from 'react-native-paper';
+import React, { memo, useCallback, useState } from 'react';
+import { View, Text, TouchableOpacity, SafeAreaView, TextInput } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useAppContext } from '../contexts/AppContext';
-import SocialLoginButtons from './SocialLoginButtons';
-import OptimizedInput from './common/OptimizedInput';
 import OptimizedButton from './common/OptimizedButton';
-import SegmentedPicker from './common/SegmentedPicker';
+import AnimatedBackground from './common/AnimatedBackground';
+import { 
+  scaleFont, 
+  spacing, 
+  responsivePadding,
+  SCREEN_HEIGHT
+} from '../utils/responsive';
 
 const SignUpScreen = memo(({ 
   loading, 
@@ -33,97 +36,109 @@ const SignUpScreen = memo(({
   }, [updateFormData]);
 
   return (
-    <PaperProvider>
-      <SafeAreaView style={styles.modernAuthContainer}>
-        <ScrollView contentContainerStyle={styles.modernAuthScrollContent} showsVerticalScrollIndicator={false}>
-          <View style={styles.modernAuthHeader}>
-            <OptimizedButton onPress={onBackToLanding} style={styles.modernBackButton}>
-              <Text style={styles.modernBackText}>←</Text>
-            </OptimizedButton>
-            <Text style={styles.modernAuthTitle}>Sign Up</Text>
-          </View>
+    <SafeAreaView style={styles.compactSignupContainer}>
+      <AnimatedBackground />
+      <StatusBar style="dark" />
+      
+      {/* Header */}
+      <View style={styles.compactHeader}>        
+        <Text style={styles.compactTitle}>Sign up</Text>
+        <Text style={styles.compactSubtitle}>Nice to meet you!</Text>
+      </View>
 
-          {/* Large cute typography */}
-          <View style={styles.cuteMessageContainer}>
-            <Text style={styles.cuteMessageText}>Nice to meet you!</Text>
-          </View>
-
-          <View style={styles.modernFormContainer}>
-            <OptimizedInput
-              label="Name"
+      {/* Form Container */}
+      <View style={styles.compactFormContainer}>
+        {/* Name Input */}
+        <View style={styles.compactInputContainer}>
+          <Text style={styles.compactInputLabel}>Name</Text>
+          <View style={styles.compactInputWrapper}>
+            <TextInput
+              style={styles.compactInput}
               value={formData.firstName}
               onChangeText={handleNameChange}
-              style={styles.modernInputGroup}
-              labelStyle={styles.modernLabel}
-              inputStyle={styles.modernInput}
-              placeholder="John"
+              placeholder="Edward"
               placeholderTextColor="#a0aec0"
             />
+          </View>
+        </View>
 
-            <OptimizedInput
-              label="Email"
+        {/* Email Input */}
+        <View style={styles.compactInputContainer}>
+          <Text style={styles.compactInputLabel}>Email</Text>
+          <View style={styles.compactInputWrapper}>
+            <TextInput
+              style={styles.compactInput}
               value={formData.email}
               onChangeText={handleEmailChange}
-              style={styles.modernInputGroup}
-              labelStyle={styles.modernLabel}
-              inputStyle={styles.modernInput}
-              placeholder="john@example.com"
+              placeholder="CorePlus@gmail.com"
               placeholderTextColor="#a0aec0"
               keyboardType="email-address"
               autoCapitalize="none"
             />
-
-            <View style={styles.modernInputGroup}>
-              <SegmentedPicker
-                label="Gender"
-                options={genderOptions}
-                selectedValue={formData.gender}
-                onSelect={onGenderSelect}
-                style={{ marginBottom: 4 }}
-              />
+          </View>
+          {formData.email && !formData.email.includes('@') && (
+            <View style={styles.errorContainer}>
+              <Text style={styles.errorDot}>●</Text>
+              <Text style={styles.errorText}>Invalid email format</Text>
             </View>
+          )}
+        </View>
 
-            <OptimizedInput
-              label="Password"
+        {/* Password Input */}
+        <View style={styles.compactInputContainer}>
+          <Text style={styles.compactInputLabel}>Password</Text>
+          <View style={styles.compactInputWrapper}>
+            <TextInput
+              style={styles.compactInput}
               value={formData.password}
               onChangeText={handlePasswordChange}
-              style={styles.modernInputGroup}
-              labelStyle={styles.modernLabel}
-              inputStyle={styles.modernInput}
-              placeholder="••••••••"
+              placeholder="••••••••••"
               placeholderTextColor="#a0aec0"
               secureTextEntry
             />
-
-            <View style={styles.modernButtonContainer}>
-              <OptimizedButton 
-                style={[styles.modernContinueButton, loading && styles.modernContinueButtonDisabled]} 
-                textStyle={styles.modernContinueText}
-                onPress={onSignUp}
-                disabled={loading}
-                loading={loading}
-                title="Continue"
-                loadingText="Creating Account..."
-              />
-
-              <SocialLoginButtons 
-                onSocialLogin={onSocialLogin}
-                loading={loading}
-                styles={styles}
-              />
-              
-              <OptimizedButton onPress={onSwitchToLogin} style={styles.modernSwitchContainer}>
-                <Text style={styles.modernSwitchText}>
-                  Already have an account? <Text style={styles.modernSwitchLink}>Login Here</Text>
-                </Text>
-              </OptimizedButton>
-            </View>
           </View>
-        </ScrollView>
+        </View>
+
+        {/* Sign Up Button */}
+        <TouchableOpacity 
+          style={[styles.compactSignUpButton, loading && styles.compactButtonDisabled]}
+          onPress={onSignUp}
+          disabled={loading}
+        >
+          <Text style={styles.compactSignUpText}>
+            {loading ? "Creating Account..." : "Sign Up"}
+          </Text>
+        </TouchableOpacity>
+
+        {/* Social Login */}
+        <Text style={styles.compactOrText}>Sign up with</Text>
         
-        <StatusBar style="dark" />
-      </SafeAreaView>
-    </PaperProvider>
+        <View style={styles.compactSocialContainer}>
+          <TouchableOpacity 
+            style={[styles.compactSocialButton, styles.compactAppleButton]}
+            onPress={() => onSocialLogin('apple')}
+          >
+            <Text style={styles.compactSocialIcon}>A</Text>
+            <Text style={[styles.compactSocialText, styles.compactAppleText]}>Apple</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[styles.compactSocialButton, styles.compactGoogleButton]}
+            onPress={() => onSocialLogin('google')}
+          >
+            <Text style={styles.compactSocialIconGoogle}>G</Text>
+            <Text style={styles.compactSocialText}>Google</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Login Link */}
+        <TouchableOpacity onPress={onSwitchToLogin} style={styles.compactLoginContainer}>
+          <Text style={styles.compactLoginText}>
+            Already have an account? <Text style={styles.compactLoginLink}>Log in</Text>
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
   );
 });
 

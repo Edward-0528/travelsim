@@ -1,4 +1,14 @@
 import { StyleSheet } from 'react-native';
+import { 
+  scaleWidth, 
+  scaleHeight, 
+  scaleFont, 
+  spacing, 
+  responsivePadding, 
+  fonts,
+  SCREEN_HEIGHT,
+  SCREEN_WIDTH
+} from '../utils/responsive';
 
 export const styles = StyleSheet.create({
   // Loading styles
@@ -13,11 +23,11 @@ export const styles = StyleSheet.create({
   },
   loadingText: {
     color: '#ffffff',
-    fontSize: 16,
-    marginTop: 20,
+    fontSize: fonts.regular,
+    marginTop: spacing.md,
   },
 
-  // Landing styles
+  // Landing styles - Responsive
   landingContainer: {
     flex: 1,
     backgroundColor: '#000',
@@ -32,17 +42,17 @@ export const styles = StyleSheet.create({
   },
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.1)',
+    backgroundColor: 'rgba(0, 0, 0, 0.0)',
   },
   landingContent: {
     flex: 1,
     justifyContent: 'flex-end',
-    paddingHorizontal: 24,
-    paddingVertical: 50,
+    paddingHorizontal: responsivePadding.container,
+    paddingVertical: SCREEN_HEIGHT > 700 ? scaleHeight(50) : scaleHeight(30),
   },
   headerSection: {
     alignItems: 'center',
-    marginTop: 40,
+    marginTop: spacing.xl,
   },
   logoText: {
     fontSize: 48,
@@ -83,25 +93,25 @@ export const styles = StyleSheet.create({
     lineHeight: 26,
     paddingHorizontal: 20,
   },
-  // New design styles
+  // New design styles - Responsive
   newHeroTitle: {
-    fontSize: 48,
+    fontSize: SCREEN_WIDTH < 350 ? fonts.hero * 0.8 : fonts.hero * 1.2,
     fontWeight: '300',
     color: '#ffffff',
     textAlign: 'left',
-    lineHeight: 52,
-    marginBottom: 20,
+    lineHeight: SCREEN_WIDTH < 350 ? scaleHeight(40) : scaleHeight(52),
+    marginBottom: spacing.md,
     textShadowColor: 'rgba(0, 0, 0, 0.8)',
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 6,
   },
   newHeroSubtitle: {
-    fontSize: 16,
+    fontSize: fonts.regular,
     color: '#e8e8e8',
     textAlign: 'left',
-    lineHeight: 24,
+    lineHeight: scaleHeight(24),
     opacity: 0.9,
-    marginBottom: 30,
+    marginBottom: spacing.lg,
   },
   heroContentBottom: {
     alignItems: 'flex-start',
@@ -133,20 +143,20 @@ export const styles = StyleSheet.create({
   },
   newGetStartedButton: {
     backgroundColor: '#5DADE2',
-    paddingVertical: 18,
-    paddingHorizontal: 32,
-    borderRadius: 30,
+    paddingVertical: scaleHeight(18),
+    paddingHorizontal: scaleWidth(32),
+    borderRadius: scaleWidth(30),
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     width: '90%',
-    maxWidth: 400,
+    maxWidth: scaleWidth(400),
     shadowColor: '#5DADE2',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.6,
     shadowRadius: 15,
     elevation: 12,
-    marginBottom: 20,
+    marginBottom: spacing.md,
   },
   buttonDisabled: {
     backgroundColor: '#666666',
@@ -331,6 +341,20 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+  modernLoginButton: {
+    backgroundColor: 'transparent',
+    borderWidth: 2,
+    borderColor: '#4299e1',
+    borderRadius: 16,
+    paddingVertical: 16,
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  modernLoginText: {
+    color: '#4299e1',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
   modernSwitchContainer: {
     alignItems: 'center',
     marginTop: 10,
@@ -341,6 +365,231 @@ export const styles = StyleSheet.create({
   },
   modernSwitchLink: {
     color: '#4299e1',
+    fontWeight: 'bold',
+  },
+
+  // Compact Sign Up Styles (New Design)
+  compactSignupContainer: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+    paddingHorizontal: responsivePadding.container,
+    justifyContent: 'flex-end',
+    paddingBottom: SCREEN_HEIGHT > 700 ? scaleHeight(40) : scaleHeight(20),
+  },
+  compactHeader: {
+    alignItems: 'center',
+    paddingBottom: spacing.lg,
+    marginBottom: spacing.md,
+  },
+  compactLogo: {
+    width: scaleWidth(64),
+    height: scaleWidth(64),
+    backgroundColor: '#4A9EFF',
+    borderRadius: scaleWidth(16),
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: spacing.md,
+  },
+  compactLogoText: {
+    fontSize: scaleFont(24),
+    fontWeight: 'bold',
+    color: '#ffffff',
+    letterSpacing: 1,
+  },
+  compactTitle: {
+    fontSize: fonts.large,
+    fontWeight: 'bold',
+    color: '#1a1a1a',
+    marginBottom: spacing.xs,
+  },
+  compactSubtitle: {
+    fontSize: fonts.small,
+    color: '#666666',
+    textAlign: 'center',
+  },
+  compactFormContainer: {
+    paddingTop: spacing.sm,
+  },
+  compactInputContainer: {
+    marginBottom: spacing.md,
+  },
+  compactInputLabel: {
+    fontSize: fonts.small,
+    color: '#1a1a1a',
+    marginBottom: spacing.xs,
+    fontWeight: '500',
+  },
+  compactInputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    borderRadius: scaleWidth(25),
+    paddingHorizontal: spacing.md,
+    paddingVertical: scaleHeight(12),
+    backgroundColor: '#ffffff',
+  },
+  compactInput: {
+    flex: 1,
+    fontSize: fonts.regular,
+    color: '#1a1a1a',
+    paddingVertical: 0,
+  },
+  errorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: spacing.xs,
+    paddingLeft: spacing.md,
+  },
+  errorDot: {
+    fontSize: scaleFont(8),
+    color: '#ff4444',
+    marginRight: spacing.xs,
+  },
+  errorText: {
+    fontSize: fonts.small,
+    color: '#ff4444',
+  },
+  compactCheckboxContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: spacing.md,
+  },
+  compactCheckbox: {
+    width: scaleWidth(18),
+    height: scaleWidth(18),
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    borderRadius: scaleWidth(3),
+    marginRight: spacing.sm,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  compactCheckboxChecked: {
+    backgroundColor: '#4A9EFF',
+    borderColor: '#4A9EFF',
+  },
+  compactCheckmark: {
+    fontSize: scaleFont(12),
+    color: '#ffffff',
+    fontWeight: 'bold',
+  },
+  compactTermsText: {
+    fontSize: fonts.small,
+    color: '#666666',
+    flex: 1,
+    lineHeight: scaleHeight(18),
+  },
+  compactSignUpButton: {
+    backgroundColor: '#4A9EFF',
+    paddingVertical: scaleHeight(16),
+    borderRadius: scaleWidth(25),
+    alignItems: 'center',
+    marginVertical: spacing.md,
+    shadowColor: '#4A9EFF',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  compactButtonDisabled: {
+    backgroundColor: '#cccccc',
+    shadowOpacity: 0,
+    elevation: 0,
+  },
+  compactSignUpText: {
+    fontSize: fonts.regular,
+    fontWeight: 'bold',
+    color: '#ffffff',
+  },
+  compactBiometricButton: {
+    backgroundColor: '#f8f9fa',
+    borderWidth: 2,
+    borderColor: '#4A9EFF',
+    borderStyle: 'dashed',
+    paddingVertical: scaleHeight(14),
+    borderRadius: scaleWidth(25),
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    marginVertical: spacing.sm,
+    shadowColor: '#4A9EFF',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  compactBiometricIcon: {
+    fontSize: fonts.large,
+    marginRight: spacing.xs,
+  },
+  compactBiometricText: {
+    fontSize: fonts.medium,
+    fontWeight: '600',
+    color: '#4A9EFF',
+  },
+  compactOrText: {
+    fontSize: fonts.small,
+    color: '#666666',
+    textAlign: 'center',
+    marginVertical: spacing.sm,
+  },
+  compactSocialContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: spacing.sm,
+    marginBottom: spacing.lg,
+  },
+  compactSocialButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: scaleHeight(12),
+    paddingHorizontal: spacing.md,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    borderRadius: scaleWidth(8),
+    backgroundColor: '#ffffff',
+  },
+  compactAppleButton: {
+    backgroundColor: '#000000',
+    borderColor: '#000000',
+  },
+  compactGoogleButton: {
+    backgroundColor: '#ffffff',
+    borderColor: '#e0e0e0',
+  },
+  compactSocialIcon: {
+    fontSize: scaleFont(16),
+    fontWeight: 'bold',
+    color: '#ffffff',
+    marginRight: spacing.xs,
+  },
+  compactSocialIconGoogle: {
+    fontSize: scaleFont(14),
+    fontWeight: 'bold',
+    color: '#db4437',
+    marginRight: spacing.xs,
+  },
+  compactSocialText: {
+    fontSize: fonts.small,
+    color: '#666666',
+    fontWeight: '500',
+  },
+  compactAppleText: {
+    color: '#ffffff',
+  },
+  compactLoginContainer: {
+    alignItems: 'center',
+    paddingVertical: spacing.sm,
+  },
+  compactLoginText: {
+    fontSize: fonts.small,
+    color: '#666666',
+  },
+  compactLoginLink: {
+    color: '#4A9EFF',
     fontWeight: 'bold',
   },
 
@@ -735,6 +984,123 @@ export const styles = StyleSheet.create({
   },
 
   // Dashboard styles
+  dashboardContainer: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+  },
+  personalHeader: {
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    paddingHorizontal: spacing.md,
+    paddingTop: scaleHeight(50), // Increased from 35 to 50 for more spacing from top
+    paddingBottom: scaleHeight(20), // Increased bottom padding
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: scaleHeight(8), // Add margin to separate from nav tabs
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  userAvatar: {
+    width: scaleWidth(50),
+    height: scaleWidth(50),
+    borderRadius: scaleWidth(25),
+    backgroundColor: '#4A9EFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: spacing.sm,
+  },
+  avatarText: {
+    fontSize: fonts.large,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+  },
+  userInfo: {
+    flex: 1,
+  },
+  greetingText: {
+    fontSize: fonts.small,
+    color: '#666666',
+    fontWeight: '400',
+    marginBottom: scaleHeight(2),
+  },
+  userNameLarge: {
+    fontSize: fonts.title,
+    fontWeight: '700',
+    color: '#1a1a1a',
+    letterSpacing: 0.5,
+  },
+  userName: {
+    fontSize: fonts.large,
+    fontWeight: '600',
+    color: '#1a1a1a',
+    marginBottom: scaleHeight(4),
+  },
+  motivationContainer: {
+    flexDirection: 'row',
+  },
+  motivationPill: {
+    backgroundColor: '#F0F0F0',
+    paddingHorizontal: scaleWidth(12),
+    paddingVertical: scaleHeight(6),
+    borderRadius: scaleWidth(15),
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  motivationText: {
+    fontSize: fonts.small,
+    color: '#666666',
+    fontWeight: '500',
+  },
+  headerRight: {
+    alignItems: 'center',
+  },
+  rankingDisplay: {
+    fontSize: fonts.medium,
+    fontWeight: '700',
+    color: '#4A9EFF',
+    letterSpacing: 1,
+  },
+  rankingContainer: {
+    alignItems: 'center',
+    backgroundColor: '#F8F9FA',
+    borderRadius: scaleWidth(12),
+    paddingHorizontal: scaleWidth(12),
+    paddingVertical: scaleHeight(8),
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  rankingLabel: {
+    fontSize: fonts.tiny,
+    color: '#666666',
+    fontWeight: '500',
+    letterSpacing: 1,
+  },
+  rankingNumber: {
+    fontSize: fonts.large,
+    fontWeight: 'bold',
+    color: '#FF9500',
+    marginTop: scaleHeight(2),
+  },
+  dateContainer: {
+    alignItems: 'center',
+    backgroundColor: '#F5F5F5',
+    borderRadius: scaleWidth(12),
+    paddingHorizontal: scaleWidth(12),
+    paddingVertical: scaleHeight(8),
+  },
+  dateNumber: {
+    fontSize: fonts.large,
+    fontWeight: 'bold',
+    color: '#1a1a1a',
+  },
+  dayOfWeek: {
+    fontSize: fonts.small,
+    color: '#666666',
+    fontWeight: '500',
+  },
   container: {
     flex: 1,
     backgroundColor: '#f8fafc',

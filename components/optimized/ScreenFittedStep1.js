@@ -1,5 +1,6 @@
 import React, { memo, useMemo, useCallback } from 'react';
 import { View, Text, TouchableOpacity, useWindowDimensions } from 'react-native';
+import { responsivePadding, fonts, spacing, scaleWidth, scaleHeight } from '../../utils/responsive';
 
 // Screen-fitted goal card component
 const CompactGoalCard = memo(({ goal, isSelected, onPress, screenHeight }) => {
