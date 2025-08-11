@@ -69,7 +69,8 @@ export const AppProvider = ({ children }) => {
     // Navigation actions
     handleGetStarted: useCallback(() => {
       setShowLanding(false);
-      setShowSignUp(true);
+      setShowSignUp(false);
+      setShowLogin(true);
     }, []),
 
     handleSwitchToLogin: useCallback(() => {

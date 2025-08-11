@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { memo, useState } from 'react';
 import { View, Text, TouchableOpacity, SafeAreaView, ImageBackground } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 
@@ -64,4 +64,4 @@ const LandingScreen = ({ onGetStarted, styles }) => {
   );
 };
 
-export default LandingScreen;
+export default memo(LandingScreen);

@@ -1,9 +1,10 @@
 import React, { memo, useCallback, useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, SafeAreaView, TextInput, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, Alert } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useAppContext } from '../contexts/AppContext';
 import AnimatedBackground from './common/AnimatedBackground';
 import { biometricService } from '../biometricService';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const LoginScreen = memo(({ 
   loading, 
@@ -68,7 +69,7 @@ const LoginScreen = memo(({
   }, [updateFormData]);
 
   return (
-    <SafeAreaView style={styles.compactSignupContainer}>
+    <SafeAreaView style={{ flex: 1 }}>
       <AnimatedBackground />
       <StatusBar style="dark" />
       

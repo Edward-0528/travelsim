@@ -1,5 +1,6 @@
 import React, { memo } from 'react';
-import { SafeAreaView, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { View } from 'react-native';
 import { PaperProvider } from 'react-native-paper';
 import { StatusBar } from 'expo-status-bar';
 import { useAppContext } from '../contexts/AppContext';

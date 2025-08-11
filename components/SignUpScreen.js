@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useState } from 'react';
+import React, { memo, useCallback } from 'react';
 import { View, Text, TouchableOpacity, SafeAreaView, TextInput } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useAppContext } from '../contexts/AppContext';
@@ -11,7 +11,7 @@ import {
   SCREEN_HEIGHT
 } from '../utils/responsive';
 
-const SignUpScreen = memo(({ 
+function SignUpScreenComponent({ 
   loading, 
   genderOptions,
   onSignUp,
@@ -20,7 +20,7 @@ const SignUpScreen = memo(({
   onSocialLogin,
   onGenderSelect,
   styles 
-}) => {
+}) {
   const { formData, updateFormData } = useAppContext();
 
   const handleNameChange = useCallback((text) => {
@@ -36,7 +36,7 @@ const SignUpScreen = memo(({
   }, [updateFormData]);
 
   return (
-    <SafeAreaView style={styles.compactSignupContainer}>
+    <SafeAreaView style={{ flex: 1 }}>
       <AnimatedBackground />
       <StatusBar style="dark" />
       
@@ -140,8 +140,8 @@ const SignUpScreen = memo(({
       </View>
     </SafeAreaView>
   );
-});
+}
 
-SignUpScreen.displayName = 'SignUpScreen';
+SignUpScreenComponent.displayName = 'SignUpScreenComponent';
 
-export default SignUpScreen;
+export default memo(SignUpScreenComponent);

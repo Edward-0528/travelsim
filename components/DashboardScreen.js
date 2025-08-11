@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { memo, useState, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Alert, useWindowDimensions, SafeAreaView, Modal, TextInput, Animated, PanResponder, Switch } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useAppContext } from '../contexts/AppContext';
@@ -1529,4 +1529,4 @@ const DashboardScreen = ({ user, onLogout, loading, styles = appStyles }) => {
   );
 };
 
-export default DashboardScreen;
+export default memo(DashboardScreen);

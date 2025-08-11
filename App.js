@@ -1,6 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { Alert, Linking } from 'react-native';
+import 'react-native-reanimated';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { Alert, Linking, View, StyleSheet } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { AnimatePresence, MotiView } from 'moti';
+import { Easing } from 'react-native-reanimated';
 import { authService } from './authService';
 import { socialAuthService } from './socialAuthService';
 import { biometricService } from './biometricService';
@@ -492,95 +496,130 @@ function AppContent() {
     }
   };
 
+  // Determine current route key for transitions
+  const route = useMemo(() => {
+    if (showLanding) return 'Landing';
+    if (showLogin) return 'Login';
+    if (showSignUp) return 'SignUp';
+    if (showOnboarding) return 'Onboarding';
+    if (isAuthenticated && user && !showOnboarding && !authLoading && !loading) return 'Dashboard';
+    return 'None';
+  }, [showLanding, showLogin, showSignUp, showOnboarding, isAuthenticated, user, authLoading, loading]);
+
+  const routeOrder = { Landing: 0, Login: 1, SignUp: 2, Onboarding: 3, Dashboard: 4, None: -1 };
+  const prevIndexRef = useRef(routeOrder[route]);
+  const direction = routeOrder[route] >= (prevIndexRef.current ?? 0) ? 1 : -1;
+  useEffect(() => { prevIndexRef.current = routeOrder[route]; }, [route]);
+
+  const renderRoute = () => {
+    switch (route) {
+      case 'Landing':
+        return (
+          <LandingScreen
+            onGetStarted={handleGetStarted}
+            styles={styles}
+          />
+        );
+      case 'SignUp':
+        return (
+          <SignUpScreen
+            loading={loading}
+            genderOptions={GENDER_OPTIONS}
+            onSignUp={handleSignUp}
+            onBackToLanding={handleBackToLanding}
+            onSwitchToLogin={handleSwitchToLogin}
+            onSocialLogin={handleSocialLogin}
+            onGenderSelect={handleGenderSelect}
+            styles={styles}
+          />
+        );
+      case 'Login':
+        return (
+          <LoginScreen
+            loading={loading}
+            onLogin={handleLogin}
+            onBackToLanding={handleBackToLanding}
+            onSwitchToSignUp={handleSwitchToSignUp}
+            onSocialLogin={handleSocialLogin}
+            onBiometricLogin={handleBiometricLogin}
+            styles={styles}
+          />
+        );
+      case 'Onboarding':
+        return (
+          <ScreenFittedOnboardingScreen
+            onboardingStep={onboardingStep}
+            showDatePicker={showDatePicker}
+            showHeightPicker={showHeightPicker}
+            showWeightPicker={showWeightPicker}
+            loading={loading}
+            onCompleteOnboarding={handleCompleteOnboarding}
+            formatDateForDisplay={formatDateForDisplay}
+            formatHeightDisplay={formatHeightDisplay}
+            styles={styles}
+          />
+        );
+      case 'Dashboard':
+        return (
+          <DashboardScreen
+            user={user}
+            onLogout={handleLogout}
+            loading={loading}
+            styles={styles}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
   // Single loading screen for all loading states
   if (authLoading || loading) {
     const message = authLoading 
-      ? "Welcome to Core+..." 
+      ? 'Welcome to Core+...' 
       : isAuthenticated 
-        ? "Setting up your personalized experience..." 
-        : "Logging you in...";
-    
+        ? 'Setting up your personalized experience...' 
+        : 'Logging you in...';
     return <LoadingScreen styles={styles} message={message} />;
   }
 
-  if (showLanding) {
-    return (
-      <LandingScreen
-        onGetStarted={handleGetStarted}
-        styles={styles}
-      />
-    );
-  }
-
-  // Sign Up Screen
-  if (showSignUp) {
-    return (
-      <SignUpScreen
-        loading={loading}
-        genderOptions={GENDER_OPTIONS}
-        onSignUp={handleSignUp}
-        onBackToLanding={handleBackToLanding}
-        onSwitchToLogin={handleSwitchToLogin}
-        onSocialLogin={handleSocialLogin}
-        onGenderSelect={handleGenderSelect}
-        styles={styles}
-      />
-    );
-  }
-
-  // Login Screen
-  if (showLogin) {
-    return (
-      <LoginScreen
-        loading={loading}
-        onLogin={handleLogin}
-        onBackToLanding={handleBackToLanding}
-        onSwitchToSignUp={handleSwitchToSignUp}
-        onSocialLogin={handleSocialLogin}
-        onBiometricLogin={handleBiometricLogin}
-        styles={styles}
-      />
-    );
-  }
-
-  // Onboarding Flow
-  if (showOnboarding) {
-    return (
-      <ScreenFittedOnboardingScreen
-        onboardingStep={onboardingStep}
-        showDatePicker={showDatePicker}
-        showHeightPicker={showHeightPicker}
-        showWeightPicker={showWeightPicker}
-        loading={loading}
-        onCompleteOnboarding={handleCompleteOnboarding}
-        formatDateForDisplay={formatDateForDisplay}
-        formatHeightDisplay={formatHeightDisplay}
-        styles={styles}
-      />
-    );
-  }
-
-  // Main App Content (after authentication and onboarding check)
-  if (isAuthenticated && user && !showOnboarding && !authLoading && !loading) {
-    return (
-      <DashboardScreen
-        user={user}
-        onLogout={handleLogout}
-        loading={loading}
-        styles={styles}
-      />
-    );
-  }
-
-  // Show landing page by default
-  return null;
+  // Animated page transitions
+  return (
+    <View style={{ flex: 1, overflow: 'hidden' }}>
+      <AnimatePresence exitBeforeEnter initial={false}>
+        {route !== 'None' && (
+          <MotiView
+            key={route}
+            from={{ transform: [{ translateX: 32 * direction }] }}
+            animate={{ transform: [{ translateX: 0 }] }}
+            exit={{ transform: [{ translateX: -32 * direction }] }}
+            transition={{
+              type: 'timing',
+              duration: 360,
+              easing: Easing.bezier(0.2, 0.0, 0.0, 1)
+            }}
+            style={[
+              StyleSheet.absoluteFill,
+              { renderToHardwareTextureAndroid: true, shouldRasterizeIOS: true }
+            ]}
+          >
+            {renderRoute()}
+          </MotiView>
+        )}
+      </AnimatePresence>
+    </View>
+  );
 }
 
 export default function App() {
   return (
-    <AppProvider>
-      <AppContent />
-      <StatusBar style="auto" />
-    </AppProvider>
+    <SafeAreaProvider>
+      <AppProvider>
+        <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom', 'left', 'right']}>
+          <AppContent />
+          <StatusBar style="auto" />
+        </SafeAreaView>
+      </AppProvider>
+    </SafeAreaProvider>
   );
 }
