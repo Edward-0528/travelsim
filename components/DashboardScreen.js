@@ -1,5 +1,5 @@
-import React, { memo, useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Alert, useWindowDimensions, SafeAreaView, Modal, TextInput, Animated, PanResponder, Switch } from 'react-native';
+import React, { memo, useState, useEffect, useRef } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, Alert, useWindowDimensions, SafeAreaView, Modal, TextInput, Animated, PanResponder, Switch, Easing } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useAppContext } from '../contexts/AppContext';
 import OptimizedButton from './common/OptimizedButton';
@@ -8,6 +8,7 @@ import LeaderboardScreen from './LeaderboardScreen';
 import { biometricService } from '../biometricService';
 import { styles as appStyles } from '../styles/AppStyles';
 import { responsivePadding, fonts, spacing, scaleWidth, scaleHeight } from '../utils/responsive';
+import Svg, { Path, Defs, LinearGradient, Stop } from 'react-native-svg';
 
 const DashboardScreen = ({ user, onLogout, loading, styles = appStyles }) => {
   const { count, setCount } = useAppContext();
@@ -35,6 +36,14 @@ const DashboardScreen = ({ user, onLogout, loading, styles = appStyles }) => {
     isEnabled: false,
     biometricType: 'Biometric'
   });
+  // Animated water fill state - REMOVED
+  const [waterLevel, setWaterLevel] = useState(0); // 0..1
+  const [waterCardHeight, setWaterCardHeight] = useState(0);
+  // Wave animations for water effect
+  const wave1 = useRef(new Animated.Value(0)).current;
+  const wave2 = useRef(new Animated.Value(0)).current;
+  const wave3 = useRef(new Animated.Value(0)).current;
+  const wave4 = useRef(new Animated.Value(0)).current;
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
   
   // Responsive values based on screen size
@@ -48,6 +57,46 @@ const DashboardScreen = ({ user, onLogout, loading, styles = appStyles }) => {
     fetchUserRanking();
     fetchLeaderboard();
     checkBiometricStatus();
+    
+    // Start wave animations for water effect
+    const startWaveAnimations = () => {
+      // Wave 1 - fastest, 7s duration
+      Animated.loop(
+        Animated.timing(wave1, {
+          toValue: 1,
+          duration: 7000,
+          useNativeDriver: true,
+        })
+      ).start();
+
+      // Wave 2 - 10s duration
+      Animated.loop(
+        Animated.timing(wave2, {
+          toValue: 1,
+          duration: 10000,
+          useNativeDriver: true,
+        })
+      ).start();
+
+      // Wave 3 - 13s duration
+      Animated.loop(
+        Animated.timing(wave3, {
+          toValue: 1,
+          duration: 13000,
+          useNativeDriver: true,
+        })
+      ).start();
+
+      // Wave 4 - slowest, 20s duration
+      Animated.loop(
+        Animated.timing(wave4, {
+          toValue: 1,
+          duration: 20000,
+          useNativeDriver: true,
+        })
+      ).start();
+    };
+    startWaveAnimations();
   }, [user]);
 
   const fetchUserProfile = async () => {
@@ -663,7 +712,7 @@ const DashboardScreen = ({ user, onLogout, loading, styles = appStyles }) => {
             </TouchableOpacity>
           </View>
 
-          <ScrollView style={{ flex: 1, padding: spacing.md }}>
+          <ScrollView style={{ flex: 1, paddingHorizontal: responsivePadding.container, paddingVertical: spacing.md }}>
             {/* Profile Picture Section */}
             <View style={{ alignItems: 'center', marginBottom: spacing.lg }}>
               <View style={[styles.userAvatar, { width: scaleWidth(100), height: scaleWidth(100), borderRadius: scaleWidth(50) }]}>
@@ -847,31 +896,9 @@ const DashboardScreen = ({ user, onLogout, loading, styles = appStyles }) => {
     const bmiInfo = getBMICategory(bmi);
     
     return (
-      <ScrollView style={{ flex: 1, padding: responsiveSpacing }}>
-        {/* Statistics Header */}
-        <View style={{ 
-          flexDirection: 'row', 
-          justifyContent: 'space-between', 
-          alignItems: 'center', 
-          marginBottom: spacing.md 
-        }}>
-          <Text style={{ 
-            fontSize: fonts.large, 
-            fontWeight: 'bold', 
-            color: '#1A1A1A' 
-          }}>
-            Statistics
-          </Text>
-          <TouchableOpacity>
-            <Text style={{ 
-              fontSize: fonts.small, 
-              color: '#4A9EFF', 
-              fontWeight: '500' 
-            }}>
-              See all
-            </Text>
-          </TouchableOpacity>
-        </View>
+      <ScrollView style={{ flex: 1, paddingHorizontal: responsivePadding.container, paddingVertical: responsiveSpacing }}>
+        
+        
 
         {/* Stats Grid - 2x2 Layout */}
         <View style={{ flexDirection: 'row', marginBottom: spacing.md }}>
@@ -889,7 +916,7 @@ const DashboardScreen = ({ user, onLogout, loading, styles = appStyles }) => {
             elevation: 2
           }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.sm }}>
-              <Text style={{ fontSize: fonts.small, color: '#8E8E93', fontWeight: '500' }}>Meal Tracker</Text>
+              <Text style={{ fontSize: fonts.small, color: '#8E8E93', fontWeight: '500' }}>Total Calories Burned</Text>
             </View>
             <Text style={{ 
               fontSize: fonts.title, 
@@ -916,7 +943,7 @@ const DashboardScreen = ({ user, onLogout, loading, styles = appStyles }) => {
             elevation: 2
           }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.sm }}>
-              <Text style={{ fontSize: fonts.small, color: '#8E8E93', fontWeight: '500' }}>Steps</Text>
+              <Text style={{ fontSize: fonts.small, color: '#8E8E93', fontWeight: '500' }}>Meal Tracker</Text>
             </View>
             <Text style={{ 
               fontSize: fonts.title, 
@@ -931,34 +958,252 @@ const DashboardScreen = ({ user, onLogout, loading, styles = appStyles }) => {
         </View>
 
         <View style={{ flexDirection: 'row', marginBottom: spacing.md }}>
-          {/* Heart Rate Card */}
-          <View style={{
-            flex: 1,
-            backgroundColor: '#FFFFFF',
-            borderRadius: scaleWidth(16),
-            padding: spacing.md,
-            marginRight: spacing.xs,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.04,
-            shadowRadius: 8,
-            elevation: 2
-          }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.sm }}>
-              <Text style={{ fontSize: fonts.small, color: '#8E8E93', fontWeight: '500' }}>Heart Rate</Text>
-            </View>
-            <Text style={{ 
-              fontSize: fonts.title, 
-              fontWeight: 'bold', 
-              color: '#1A1A1A',
-              marginBottom: 2
+          {/* Water Intake Card with animated waves background */}
+          <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={handleWaterCardPress}
+            accessibilityRole="button"
+            style={{
+              flex: 1,
+              backgroundColor: '#FFFFFF',
+              borderRadius: scaleWidth(16),
+              padding: spacing.md,
+              marginRight: spacing.xs,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.04,
+              shadowRadius: 8,
+              elevation: 2,
+              position: 'relative',
+              overflow: 'hidden',
+            }}
+          >
+            {/* Animated wave background */}
+            <View style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: `${Math.max(15, waterLevel * 100)}%`,
+              overflow: 'hidden',
             }}>
-              120
-            </Text>
-            <Text style={{ fontSize: fonts.small, color: '#8E8E93' }}>bpm</Text>
-          </View>
+              {/* Gradient background */}
+              <View style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: '#4A90E2',
+                opacity: 0.1,
+              }} />
+              
+              {/* SVG Waves */}
+              <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 60 }}>
+                <Svg
+                  height="60"
+                  width="100%"
+                  viewBox="0 0 1200 120"
+                  preserveAspectRatio="none"
+                  style={{ position: 'absolute', bottom: 0 }}
+                >
+                  <Defs>
+                    <LinearGradient id="waveGradient1" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <Stop offset="0%" style={{ stopColor: '#64B5F6', stopOpacity: 0.3 }} />
+                      <Stop offset="100%" style={{ stopColor: '#42A5F5', stopOpacity: 0.6 }} />
+                    </LinearGradient>
+                    <LinearGradient id="waveGradient2" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <Stop offset="0%" style={{ stopColor: '#42A5F5', stopOpacity: 0.4 }} />
+                      <Stop offset="100%" style={{ stopColor: '#2196F3', stopOpacity: 0.7 }} />
+                    </LinearGradient>
+                    <LinearGradient id="waveGradient3" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <Stop offset="0%" style={{ stopColor: '#2196F3', stopOpacity: 0.5 }} />
+                      <Stop offset="100%" style={{ stopColor: '#1976D2', stopOpacity: 0.8 }} />
+                    </LinearGradient>
+                    <LinearGradient id="waveGradient4" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <Stop offset="0%" style={{ stopColor: '#1976D2', stopOpacity: 0.6 }} />
+                      <Stop offset="100%" style={{ stopColor: '#1565C0', stopOpacity: 0.9 }} />
+                    </LinearGradient>
+                  </Defs>
+                  
+                  {/* Wave 4 - Deepest layer */}
+                  <Path
+                    d="M0,60 C320,60 420,0 740,0 C1060,0 1160,60 1200,60 L1200,120 L0,120 Z"
+                    fill="url(#waveGradient4)"
+                  />
+                  
+                  {/* Wave 3 */}
+                  <Path
+                    d="M0,80 C300,80 400,20 700,20 C1000,20 1100,80 1200,80 L1200,120 L0,120 Z"
+                    fill="url(#waveGradient3)"
+                  />
+                  
+                  {/* Wave 2 */}
+                  <Path
+                    d="M0,100 C280,100 380,40 680,40 C980,40 1080,100 1200,100 L1200,120 L0,120 Z"
+                    fill="url(#waveGradient2)"
+                  />
+                  
+                  {/* Wave 1 - Surface layer */}
+                  <Path
+                    d="M0,110 C260,110 360,50 660,50 C960,50 1060,110 1200,110 L1200,120 L0,120 Z"
+                    fill="url(#waveGradient1)"
+                  />
+                </Svg>
+                
+                {/* Animated wave overlays using Animated.View */}
+                <Animated.View
+                  style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    height: 60,
+                    transform: [{
+                      translateX: wave4.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [-90, 85]
+                      })
+                    }]
+                  }}
+                >
+                  <Svg
+                    height="60"
+                    width="100%"
+                    viewBox="0 0 1200 120"
+                    preserveAspectRatio="none"
+                    style={{ opacity: 0.6 }}
+                  >
+                    <Path
+                      d="M0,60 C320,60 420,0 740,0 C1060,0 1160,60 1200,60 L1200,120 L0,120 Z"
+                      fill="rgba(21, 101, 192, 0.3)"
+                    />
+                  </Svg>
+                </Animated.View>
+                
+                <Animated.View
+                  style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    height: 60,
+                    transform: [{
+                      translateX: wave3.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [-90, 85]
+                      })
+                    }]
+                  }}
+                >
+                  <Svg
+                    height="60"
+                    width="100%"
+                    viewBox="0 0 1200 120"
+                    preserveAspectRatio="none"
+                    style={{ opacity: 0.5 }}
+                  >
+                    <Path
+                      d="M0,80 C300,80 400,20 700,20 C1000,20 1100,80 1200,80 L1200,120 L0,120 Z"
+                      fill="rgba(25, 118, 210, 0.4)"
+                    />
+                  </Svg>
+                </Animated.View>
+                
+                <Animated.View
+                  style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    height: 60,
+                    transform: [{
+                      translateX: wave2.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [-90, 85]
+                      })
+                    }]
+                  }}
+                >
+                  <Svg
+                    height="60"
+                    width="100%"
+                    viewBox="0 0 1200 120"
+                    preserveAspectRatio="none"
+                    style={{ opacity: 0.4 }}
+                  >
+                    <Path
+                      d="M0,100 C280,100 380,40 680,40 C980,40 1080,100 1200,100 L1200,120 L0,120 Z"
+                      fill="rgba(33, 150, 243, 0.5)"
+                    />
+                  </Svg>
+                </Animated.View>
+                
+                <Animated.View
+                  style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    height: 60,
+                    transform: [{
+                      translateX: wave1.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [-90, 85]
+                      })
+                    }]
+                  }}
+                >
+                  <Svg
+                    height="60"
+                    width="100%"
+                    viewBox="0 0 1200 120"
+                    preserveAspectRatio="none"
+                    style={{ opacity: 0.3 }}
+                  >
+                    <Path
+                      d="M0,110 C260,110 360,50 660,50 C960,50 1060,110 1200,110 L1200,120 L0,120 Z"
+                      fill="rgba(100, 181, 246, 0.6)"
+                    />
+                  </Svg>
+                </Animated.View>
+              </View>
+            </View>
+            
+            {/* Content overlay */}
+            <View style={{ zIndex: 1 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.sm }}>
+                <Text style={{ fontSize: fonts.small, color: '#8E8E93', fontWeight: '500' }}>Water Intake</Text>
+              </View>
+              <Text style={{ 
+                fontSize: fonts.title, 
+                fontWeight: 'bold', 
+                color: '#4A90E2',
+                marginBottom: 2
+              }}>
+                {Math.round(waterLevel * 100)}%
+              </Text>
+              <Text style={{ fontSize: fonts.small, color: '#8E8E93' }}>hydration</Text>
+              
+              {/* Simple progress bar */}
+              <View style={{
+                backgroundColor: '#F0F0F0',
+                height: 6,
+                borderRadius: 3,
+                marginTop: spacing.sm,
+                overflow: 'hidden'
+              }}>
+                <View style={{
+                  backgroundColor: '#4A90E2',
+                  height: 6,
+                  borderRadius: 3,
+                  width: `${waterLevel * 100}%`
+                }} />
+              </View>
+            </View>
+          </TouchableOpacity>
 
-          {/* Workout Card */}
+          {/* Workouts Card */}
           <View style={{
             flex: 1,
             backgroundColor: '#FFFFFF',
@@ -980,135 +1225,24 @@ const DashboardScreen = ({ user, onLogout, loading, styles = appStyles }) => {
               color: '#1A1A1A',
               marginBottom: 2
             }}>
-              12
+              6,650
             </Text>
-            <Text style={{ fontSize: fonts.small, color: '#8E8E93' }}>this week</Text>
+            <Text style={{ fontSize: fonts.small, color: '#8E8E93' }}>steps</Text>
           </View>
         </View>
 
-        <View style={{ flexDirection: 'row', marginBottom: spacing.md }}>
-          {/* Water Card */}
-          <View style={{
-            flex: 1,
-            backgroundColor: '#FFFFFF',
-            borderRadius: scaleWidth(16),
-            padding: spacing.md,
-            marginRight: spacing.xs,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.04,
-            shadowRadius: 8,
-            elevation: 2
-          }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.sm }}>
-              <Text style={{ fontSize: fonts.small, color: '#8E8E93', fontWeight: '500' }}>Water</Text>
-            </View>
-            <Text style={{ 
-              fontSize: fonts.title, 
-              fontWeight: 'bold', 
-              color: '#1A1A1A',
-              marginBottom: 2
-            }}>
-              1.8
-            </Text>
-            <Text style={{ fontSize: fonts.small, color: '#8E8E93' }}>Liter</Text>
-          </View>
+       
 
-          {/* Sleep Card */}
-          <View style={{
-            flex: 1,
-            backgroundColor: '#FFFFFF',
-            borderRadius: scaleWidth(16),
-            padding: spacing.md,
-            marginLeft: spacing.xs,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.04,
-            shadowRadius: 8,
-            elevation: 2
-          }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.sm }}>
-              <Text style={{ fontSize: fonts.small, color: '#8E8E93', fontWeight: '500' }}>Sleep</Text>
-            </View>
-            <Text style={{ 
-              fontSize: fonts.title, 
-              fontWeight: 'bold', 
-              color: '#1A1A1A',
-              marginBottom: 2
-            }}>
-              7.5
-            </Text>
-            <Text style={{ fontSize: fonts.small, color: '#8E8E93' }}>hours</Text>
-          </View>
-        </View>
+        
+          
 
-        <View style={{ flexDirection: 'row', marginBottom: spacing.lg }}>
-          {/* BMI Card - Updated Design */}
-          <View style={{
-            flex: 1,
-            backgroundColor: '#FFFFFF',
-            borderRadius: scaleWidth(16),
-            padding: spacing.md,
-            marginRight: spacing.xs,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.04,
-            shadowRadius: 8,
-            elevation: 2
-          }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.sm }}>
-              <Text style={{ fontSize: fonts.small, color: '#8E8E93', fontWeight: '500' }}>BMI</Text>
-            </View>
-            <Text style={{ 
-              fontSize: fonts.title, 
-              fontWeight: 'bold', 
-              color: '#1A1A1A',
-              marginBottom: 2
-            }}>
-              {bmi}
-            </Text>
-            <Text style={{ fontSize: fonts.small, color: bmiInfo.color, fontWeight: '600' }}>
-              {bmiInfo.category}
-            </Text>
-          </View>
-
-          {/* Current Goal Card - Updated Design */}
-          {userProfile && (
-            <View style={{
-              flex: 1,
-              backgroundColor: '#FFFFFF',
-              borderRadius: scaleWidth(16),
-              padding: spacing.md,
-              marginLeft: spacing.xs,
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.04,
-              shadowRadius: 8,
-              elevation: 2
-            }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.sm }}>
-                <Text style={{ fontSize: fonts.small, color: '#8E8E93', fontWeight: '500' }}>Goal</Text>
-              </View>
-              <Text style={{ 
-                fontSize: fonts.title, 
-                fontWeight: 'bold', 
-                color: '#1A1A1A',
-                marginBottom: 2
-              }}>
-                {getGoalText(userProfile.main_goal).split(' ')[0]}
-              </Text>
-              <Text style={{ fontSize: fonts.small, color: '#8E8E93' }}>
-                {getGoalText(userProfile.main_goal).split(' ').slice(1).join(' ') || 'Target'}
-              </Text>
-            </View>
-          )}
-        </View>
+          
       </ScrollView>
     );
   };
 
   const renderWorkouts = () => (
-    <ScrollView style={{ flex: 1, padding: 20 }}>
+    <ScrollView style={{ flex: 1, paddingHorizontal: responsivePadding.container, paddingVertical: 20 }}>
       <Text style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 20, color: '#1A1A1A' }}>
         Workout Plans
       </Text>
@@ -1154,7 +1288,7 @@ const DashboardScreen = ({ user, onLogout, loading, styles = appStyles }) => {
   );
 
   const renderCalories = () => (
-    <ScrollView style={{ flex: 1, padding: 20 }}>
+    <ScrollView style={{ flex: 1, paddingHorizontal: responsivePadding.container, paddingVertical: 20 }}>
       <Text style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 20, color: '#1A1A1A' }}>
         Calorie Tracker
       </Text>
@@ -1201,7 +1335,7 @@ const DashboardScreen = ({ user, onLogout, loading, styles = appStyles }) => {
   );
 
   const renderProgress = () => (
-    <ScrollView style={{ flex: 1, padding: 20 }}>
+    <ScrollView style={{ flex: 1, paddingHorizontal: responsivePadding.container, paddingVertical: 20 }}>
       <Text style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 20, color: '#1A1A1A' }}>
         Weight Progress
       </Text>
@@ -1262,6 +1396,13 @@ const DashboardScreen = ({ user, onLogout, loading, styles = appStyles }) => {
     }
   };
 
+  // Increment water level by 10% per tap, up to 100%
+  const handleWaterCardPress = () => {
+    if (waterLevel >= 1) return; // already full
+    const next = Math.min(1, parseFloat((waterLevel + 0.1).toFixed(2)));
+    setWaterLevel(next);
+  };
+
   return (
     <SafeAreaView style={styles.dashboardContainer}>
       <AnimatedBackground />
@@ -1304,7 +1445,7 @@ const DashboardScreen = ({ user, onLogout, loading, styles = appStyles }) => {
         {/* Workout Module - Updated to match card design */}
         <View style={{
           backgroundColor: '#FFFFFF',
-          marginHorizontal: spacing.md,
+          marginHorizontal: responsivePadding.container,
           marginVertical: spacing.xs,
           borderRadius: scaleWidth(16),
           padding: spacing.md,

@@ -239,7 +239,8 @@ export const styles = StyleSheet.create({
   },
   modernAuthScrollContent: {
     flexGrow: 1,
-    paddingHorizontal: 20,
+    // Increase horizontal padding for comfortable margins on forms
+    paddingHorizontal: responsivePadding.container,
   },
   modernAuthHeader: {
     flexDirection: 'row',
@@ -832,7 +833,8 @@ export const styles = StyleSheet.create({
   },
   stepContainer: {
     flex: 1,
-    paddingHorizontal: 20,
+    // Wider horizontal padding for onboarding forms
+    paddingHorizontal: responsivePadding.container,
   },
   stepTitle: {
     fontSize: 20,
@@ -990,7 +992,8 @@ export const styles = StyleSheet.create({
   },
   personalHeader: {
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    paddingHorizontal: spacing.md,
+    // Increase left/right spacing so header content doesn't feel edge-to-edge
+    paddingHorizontal: responsivePadding.container,
     paddingTop: scaleHeight(50), // Increased from 35 to 50 for more spacing from top
     paddingBottom: scaleHeight(20), // Increased bottom padding
     flexDirection: 'row',

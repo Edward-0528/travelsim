@@ -36,9 +36,10 @@ const isLargeDevice = SCREEN_WIDTH >= 414;
 
 // Responsive padding based on device size
 const responsivePadding = {
-  container: isSmallDevice ? 16 : isMediumDevice ? 20 : 24,
-  content: isSmallDevice ? 12 : isMediumDevice ? 16 : 20,
-  small: isSmallDevice ? 8 : isMediumDevice ? 12 : 16,
+  // Bumped up to create more left/right breathing room for forms and cards
+  container: isSmallDevice ? 24 : isMediumDevice ? 28 : 32,
+  content: isSmallDevice ? 14 : isMediumDevice ? 18 : 22,
+  small: isSmallDevice ? 10 : isMediumDevice ? 14 : 18,
 };
 
 // Responsive font sizes
