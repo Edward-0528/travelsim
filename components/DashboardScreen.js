@@ -9,6 +9,7 @@ import { biometricService } from '../biometricService';
 import { styles as appStyles } from '../styles/AppStyles';
 import { responsivePadding, fonts, spacing, scaleWidth, scaleHeight } from '../utils/responsive';
 import Svg, { Path, Defs, LinearGradient, Stop } from 'react-native-svg';
+import ConfettiCannon from 'react-native-confetti-cannon';
 
 const DashboardScreen = ({ user, onLogout, loading, styles = appStyles }) => {
   const { count, setCount } = useAppContext();
@@ -36,9 +37,8 @@ const DashboardScreen = ({ user, onLogout, loading, styles = appStyles }) => {
     isEnabled: false,
     biometricType: 'Biometric'
   });
+  const [showConfetti, setShowConfetti] = useState(false);
   // Animated water fill state - REMOVED
-  const [waterLevel, setWaterLevel] = useState(0); // 0..1
-  const [waterCardHeight, setWaterCardHeight] = useState(0);
   // Wave animations for water effect
   const wave1 = useRef(new Animated.Value(0)).current;
   const wave2 = useRef(new Animated.Value(0)).current;
@@ -49,6 +49,21 @@ const DashboardScreen = ({ user, onLogout, loading, styles = appStyles }) => {
   // Responsive values based on screen size
   const isSmallScreen = screenHeight < 700;
   const responsiveSpacing = isSmallScreen ? spacing.sm : spacing.md;
+
+  // Water intake state: track ounces and last reset date
+  const [waterOunces, setWaterOunces] = useState(0);
+  const [lastResetDate, setLastResetDate] = useState(new Date().toDateString());
+  const WATER_GOAL_OZ = 124;
+  const WATER_INCREMENT_OZ = 8;
+
+  // Reset water intake if the day has changed
+  useEffect(() => {
+    const today = new Date().toDateString();
+    if (lastResetDate !== today) {
+      setWaterOunces(0);
+      setLastResetDate(today);
+    }
+  }, [lastResetDate]);
 
   // Fetch user fitness profile
   useEffect(() => {
@@ -958,10 +973,10 @@ const DashboardScreen = ({ user, onLogout, loading, styles = appStyles }) => {
         </View>
 
         <View style={{ flexDirection: 'row', marginBottom: spacing.md }}>
-          {/* Water Intake Card with animated waves background */}
+          {/* Water Intake Card */}
           <TouchableOpacity
             activeOpacity={0.85}
-            onPress={handleWaterCardPress}
+            onPress={handleWaterIntake}
             accessibilityRole="button"
             style={{
               flex: 1,
@@ -976,200 +991,23 @@ const DashboardScreen = ({ user, onLogout, loading, styles = appStyles }) => {
               elevation: 2,
               position: 'relative',
               overflow: 'hidden',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
           >
-            {/* Animated wave background */}
-            <View style={{
-              position: 'absolute',
-              bottom: 0,
-              left: 0,
-              right: 0,
-              height: `${Math.max(15, waterLevel * 100)}%`,
-              overflow: 'hidden',
-            }}>
-              {/* Gradient background */}
-              <View style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundColor: '#4A90E2',
-                opacity: 0.1,
-              }} />
-              
-              {/* SVG Waves */}
-              <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 60 }}>
-                <Svg
-                  height="60"
-                  width="100%"
-                  viewBox="0 0 1200 120"
-                  preserveAspectRatio="none"
-                  style={{ position: 'absolute', bottom: 0 }}
-                >
-                  <Defs>
-                    <LinearGradient id="waveGradient1" x1="0%" y1="0%" x2="0%" y2="100%">
-                      <Stop offset="0%" style={{ stopColor: '#64B5F6', stopOpacity: 0.3 }} />
-                      <Stop offset="100%" style={{ stopColor: '#42A5F5', stopOpacity: 0.6 }} />
-                    </LinearGradient>
-                    <LinearGradient id="waveGradient2" x1="0%" y1="0%" x2="0%" y2="100%">
-                      <Stop offset="0%" style={{ stopColor: '#42A5F5', stopOpacity: 0.4 }} />
-                      <Stop offset="100%" style={{ stopColor: '#2196F3', stopOpacity: 0.7 }} />
-                    </LinearGradient>
-                    <LinearGradient id="waveGradient3" x1="0%" y1="0%" x2="0%" y2="100%">
-                      <Stop offset="0%" style={{ stopColor: '#2196F3', stopOpacity: 0.5 }} />
-                      <Stop offset="100%" style={{ stopColor: '#1976D2', stopOpacity: 0.8 }} />
-                    </LinearGradient>
-                    <LinearGradient id="waveGradient4" x1="0%" y1="0%" x2="0%" y2="100%">
-                      <Stop offset="0%" style={{ stopColor: '#1976D2', stopOpacity: 0.6 }} />
-                      <Stop offset="100%" style={{ stopColor: '#1565C0', stopOpacity: 0.9 }} />
-                    </LinearGradient>
-                  </Defs>
-                  
-                  {/* Wave 4 - Deepest layer */}
-                  <Path
-                    d="M0,60 C320,60 420,0 740,0 C1060,0 1160,60 1200,60 L1200,120 L0,120 Z"
-                    fill="url(#waveGradient4)"
-                  />
-                  
-                  {/* Wave 3 */}
-                  <Path
-                    d="M0,80 C300,80 400,20 700,20 C1000,20 1100,80 1200,80 L1200,120 L0,120 Z"
-                    fill="url(#waveGradient3)"
-                  />
-                  
-                  {/* Wave 2 */}
-                  <Path
-                    d="M0,100 C280,100 380,40 680,40 C980,40 1080,100 1200,100 L1200,120 L0,120 Z"
-                    fill="url(#waveGradient2)"
-                  />
-                  
-                  {/* Wave 1 - Surface layer */}
-                  <Path
-                    d="M0,110 C260,110 360,50 660,50 C960,50 1060,110 1200,110 L1200,120 L0,120 Z"
-                    fill="url(#waveGradient1)"
-                  />
-                </Svg>
-                
-                {/* Animated wave overlays using Animated.View */}
-                <Animated.View
-                  style={{
-                    position: 'absolute',
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    height: 60,
-                    transform: [{
-                      translateX: wave4.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: [-90, 85]
-                      })
-                    }]
-                  }}
-                >
-                  <Svg
-                    height="60"
-                    width="100%"
-                    viewBox="0 0 1200 120"
-                    preserveAspectRatio="none"
-                    style={{ opacity: 0.6 }}
-                  >
-                    <Path
-                      d="M0,60 C320,60 420,0 740,0 C1060,0 1160,60 1200,60 L1200,120 L0,120 Z"
-                      fill="rgba(21, 101, 192, 0.3)"
-                    />
-                  </Svg>
-                </Animated.View>
-                
-                <Animated.View
-                  style={{
-                    position: 'absolute',
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    height: 60,
-                    transform: [{
-                      translateX: wave3.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: [-90, 85]
-                      })
-                    }]
-                  }}
-                >
-                  <Svg
-                    height="60"
-                    width="100%"
-                    viewBox="0 0 1200 120"
-                    preserveAspectRatio="none"
-                    style={{ opacity: 0.5 }}
-                  >
-                    <Path
-                      d="M0,80 C300,80 400,20 700,20 C1000,20 1100,80 1200,80 L1200,120 L0,120 Z"
-                      fill="rgba(25, 118, 210, 0.4)"
-                    />
-                  </Svg>
-                </Animated.View>
-                
-                <Animated.View
-                  style={{
-                    position: 'absolute',
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    height: 60,
-                    transform: [{
-                      translateX: wave2.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: [-90, 85]
-                      })
-                    }]
-                  }}
-                >
-                  <Svg
-                    height="60"
-                    width="100%"
-                    viewBox="0 0 1200 120"
-                    preserveAspectRatio="none"
-                    style={{ opacity: 0.4 }}
-                  >
-                    <Path
-                      d="M0,100 C280,100 380,40 680,40 C980,40 1080,100 1200,100 L1200,120 L0,120 Z"
-                      fill="rgba(33, 150, 243, 0.5)"
-                    />
-                  </Svg>
-                </Animated.View>
-                
-                <Animated.View
-                  style={{
-                    position: 'absolute',
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    height: 60,
-                    transform: [{
-                      translateX: wave1.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: [-90, 85]
-                      })
-                    }]
-                  }}
-                >
-                  <Svg
-                    height="60"
-                    width="100%"
-                    viewBox="0 0 1200 120"
-                    preserveAspectRatio="none"
-                    style={{ opacity: 0.3 }}
-                  >
-                    <Path
-                      d="M0,110 C260,110 360,50 660,50 C960,50 1060,110 1200,110 L1200,120 L0,120 Z"
-                      fill="rgba(100, 181, 246, 0.6)"
-                    />
-                  </Svg>
-                </Animated.View>
-              </View>
-            </View>
-            
+            {/* Confetti animation when goal is reached */}
+            {showConfetti && (
+              <ConfettiCannon
+                count={80}
+                origin={{ x: 0, y: 0 }}
+                fadeOut
+                fallSpeed={2500}
+                explosionSpeed={400}
+                autoStart
+                colors={['#4A90E2', '#42A5F5', '#34C759', '#FFD700', '#FF69B4']}
+                style={{ position: 'absolute', left: 0, top: 0, width: '100%', height: '100%', zIndex: 10 }}
+              />
+            )}
             {/* Content overlay */}
             <View style={{ zIndex: 1 }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.sm }}>
@@ -1181,10 +1019,9 @@ const DashboardScreen = ({ user, onLogout, loading, styles = appStyles }) => {
                 color: '#4A90E2',
                 marginBottom: 2
               }}>
-                {Math.round(waterLevel * 100)}%
+                {waterOunces} oz
               </Text>
-              <Text style={{ fontSize: fonts.small, color: '#8E8E93' }}>hydration</Text>
-              
+              <Text style={{ fontSize: fonts.small, color: '#8E8E93' }}>of {WATER_GOAL_OZ} oz</Text>
               {/* Simple progress bar */}
               <View style={{
                 backgroundColor: '#F0F0F0',
@@ -1197,7 +1034,7 @@ const DashboardScreen = ({ user, onLogout, loading, styles = appStyles }) => {
                   backgroundColor: '#4A90E2',
                   height: 6,
                   borderRadius: 3,
-                  width: `${waterLevel * 100}%`
+                  width: `${(waterOunces / WATER_GOAL_OZ) * 100}%`
                 }} />
               </View>
             </View>
@@ -1396,11 +1233,17 @@ const DashboardScreen = ({ user, onLogout, loading, styles = appStyles }) => {
     }
   };
 
-  // Increment water level by 10% per tap, up to 100%
-  const handleWaterCardPress = () => {
-    if (waterLevel >= 1) return; // already full
-    const next = Math.min(1, parseFloat((waterLevel + 0.1).toFixed(2)));
-    setWaterLevel(next);
+  // Add water intake handler for incrementing by 8oz, max 124oz
+  const handleWaterIntake = () => {
+    setWaterOunces(prev => {
+      const next = Math.min(prev + WATER_INCREMENT_OZ, WATER_GOAL_OZ);
+      if (prev < WATER_GOAL_OZ && next === WATER_GOAL_OZ) {
+        setShowConfetti(true);
+        setTimeout(() => setShowConfetti(false), 3500);
+        Alert.alert('Congratulations!', 'You reached your daily water goal! 🥳💧');
+      }
+      return next;
+    });
   };
 
   return (
